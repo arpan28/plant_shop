@@ -1,0 +1,47 @@
+version: '3.9'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_USER: house
+      POSTGRES_PASSWORD: bloom
+      POSTGRES_DB: house_of_bloom
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U house -d house_of_bloom']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: ./backend
+    ports:
+      - '8000:8000'
+    environment:
+      - PYTHONUNBUFFERED=1
+      - DATABASE_URL=postgresql://house:bloom@postgres:5432/house_of_bloom
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ['CMD-SHELL', 'curl -f http://localhost:8000/health || exit 1']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  frontend:
+    build:
+      context: ./house_of_bloom_ui/house_of_bloom
+      args:
+        VITE_API_URL: http://backend:8000
+    ports:
+      - '4173:80'
+    depends_on:
+      backend:
+        condition: service_started
+
+volumes:
+  postgres-data:
