@@ -1,0 +1,5 @@
+house_of_bloom/house_of_bloom_ui/house_of_bloom/node_modules/
+house_of_bloom/house_of_bloom_ui/house_of_bloom/dist/
+house_of_bloom/backend/.venv/
+*.pyc
+__pycache__/
